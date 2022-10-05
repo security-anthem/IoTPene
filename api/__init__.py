@@ -42,8 +42,11 @@ def search(argv):
     if query_string[0 : 3].upper() == "CVE":
         return search_by_cve(query_string)
     elif query_string.isnumeric():
-        return search_by_id(query_string)
-
+        if not search_by_id(query_string):
+            return search_by_keywords(argv[3:])
+    else:
+        argv.append('-t')
+        return search_by_keywords(argv[3:])
 
 def get(argv):
     query_string = argv[3]
@@ -52,20 +55,20 @@ def get(argv):
     next(reader)
 
     if query_string[0 : 3].upper() == "CVE":
-        if not query_string.upper() in cve_map:
+        if not query_string.upper() in exploit_cve_map:
             files.close()
             return 0
         query_string = [query_string.upper()]
     elif query_string.isnumeric():
-        if not query_string in db_id_map:
+        if not query_string in exploit_db_id_map:
             files.close()
             return 0
-        query_string = db_id_map.get(query_string)
+        query_string = exploit_db_id_map.get(query_string)
 
     for query in query_string:
         for row in reader:
             edb, file, description, date, author, platform, type, port = tuple(row)
-            if edb in cve_map[query]:
+            if edb in exploit_cve_map[query]:
                 file_route = db_path + "/exploit-database/" + file
                 exploit_script = open(file_route)
                 print("===================================================================")
@@ -80,11 +83,13 @@ def update(argv):
     query_string = argv[3]
     if query_string == "all":
         update_db()
-        update_cve_json()
+        update_shellcode_cve_json()
+        update_shellcode_cve_json()
     if query_string == "db":
         update_db()
     if query_string == "cve":
-        update_cve_json()
+        update_shellcode_cve_json()
+        update_shellcode_cve_json()
 
 options = {"--help":    print_usage,
            "-h":        print_usage,
@@ -98,6 +103,7 @@ def api_run(argv):
         sys.exit(0)
 
     if check_db_exist() == False:
+        print("exploit db not exist download start")
         download_db()
 
     if len(argv) < 3:
