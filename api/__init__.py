@@ -76,7 +76,8 @@ def get(argv):
                 print("===================================================================")
                 print(exploit_script.read())
                 exploit_script.close()
-
+        print("Total: {} found. ", exploit_cve_map[query])
+        print("CVE: " + query)
 
     files.close()
 def update(argv):

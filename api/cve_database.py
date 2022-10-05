@@ -5,7 +5,7 @@ import random
 import sys
 import time
 
-import progressbar
+#import progressbar
 import requests
 
 exploit_db_mapping = "/exploitdb_mapping.json"
@@ -160,9 +160,9 @@ def update_shellcode_cve_json():
             return recurse([], 0)
 
         print("Refreshing EDBID-CVE mapping")
-        bar = progressbar.ProgressBar(
-            widgets=[' [', progressbar.Timer(), '] ', progressbar.Bar(), ' (', progressbar.ETA(), ') '],
-            maxval=csv_len).start()
+        # bar = progressbar.ProgressBar(
+        #     widgets=[' [', progressbar.Timer(), '] ', progressbar.Bar(), ' (', progressbar.ETA(), ') '],
+        #     maxval=csv_len).start()
         for i in range(csv_len):
             edb = tuple(reader[i])[0]
             if edb in data:
@@ -207,8 +207,8 @@ def update_shellcode_cve_json():
                     print("Found: edbid " + edb + " <---> " + cve)
                 data[edb] = used
                 time.sleep(random.uniform(0.1, 0.3))
-            bar.update(i)
-        bar.finish()
+        #     bar.update(i)
+        # bar.finish()
 
         with open(pdir + "/shellcode_mapping.json", "w") as db_file:
             json.dump(data, db_file, indent=2)
@@ -250,29 +250,7 @@ def _search_cve_aux(cve):
 
     files.close()
     print("")
-    print("-------------------shellcode-----------------")
-    files = open(pdir + "/exploit-database/files_shellcodes.csv", errors="ignore")
-    reader = csv.reader(files)
-    # reader.next() #skip header
-    next(reader)
 
-    found = False
-    for row in reader:
-        id, file, description, date, author, type, platform = tuple(row)
-        if id in shellcode_cve_map[cve]:
-            found = True
-            print(" Exploit DB Id: " + edb)
-            print(" File: " + pdir + "/exploit-database/" + file)
-            print(" Date: " + date)
-            print(" Author: " + author)
-            print(" Platform: " + platform)
-            print(" Type: " + type)
-            print("")
-    if not found:
-        print("ERROR - No EDB Id found")
-        print("")
-
-    files.close()
     return found
 
 def search_from_file(file):
@@ -343,13 +321,6 @@ def search_by_cve(cve):
         if not found:
             print("------------------------")
 
-    if not cve in shellcode_cve_map:
-        print("CVE not found in shellcode.")
-        print("")
-    else:
-        found = _search_cve_aux(cve)
-        if not found:
-            print("------------------------")
 def search_by_id(id):
 
     sname = "| " + str(id) + " |"
