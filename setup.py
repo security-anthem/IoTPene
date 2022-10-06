@@ -5,5 +5,6 @@ setup(
     name="IoTPene",
     version="0.0.1",
     description="IoTPene",
-    author=""
+    author="",
+    requires=['progressbar']
 )
