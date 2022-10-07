@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     if len(sys.argv) < 2:
         print_usage()
-    if sys.argv[1] == "--help" or sys.argv[1] == "-h":
+    if sys.argv[1] == "--help" or sys.argv[1] == "-h" or sys.argv[1] == "help":
         print_usage()
     if sys.argv[1] == "db":
         api.api_run(sys.argv)

@@ -5,7 +5,7 @@ import random
 import sys
 import time
 
-#import progressbar
+import progressbar
 import requests
 
 exploit_db_mapping = "/exploitdb_mapping.json"
@@ -62,16 +62,16 @@ def update_exploit_cve_json():
             return recurse([], 0)
 
         print("Refreshing EDBID-CVE mapping")
-        # bar = progressbar.ProgressBar(
-        #     widgets=[' [', progressbar.Timer(), '] ', progressbar.Bar(), ' (', progressbar.ETA(), ') '],
-        #     maxval=csv_len).start()
+        bar = progressbar.ProgressBar(
+            widgets=[' [', progressbar.Timer(), '] ', progressbar.Bar(), ' (', progressbar.ETA(), ') '],
+            maxval=csv_len).start()
         for i in range(csv_len):
             edb = tuple(reader[i])[0]
             if edb in data:
                 # print "Skipping edb id " + edb
                 pass
             else:
-                # print "Downloading https://www.exploit-db.com/exploits/" + edb
+                print("Downloading https://www.exploit-db.com/exploits/" + edb)
                 content = ""
                 while True:
                     try:
@@ -109,8 +109,8 @@ def update_exploit_cve_json():
                     print("Found: edbid " + edb + " <---> " + cve)
                 data[edb] = used
                 time.sleep(random.uniform(0.1, 0.3))
-        #     bar.update(i)
-        # bar.finish()
+            bar.update(i)
+        bar.finish()
 
         with open(pdir + "/exploitdb_mapping.json", "w") as db_file:
             json.dump(data, db_file, indent=2)
@@ -160,16 +160,16 @@ def update_shellcode_cve_json():
             return recurse([], 0)
 
         print("Refreshing EDBID-CVE mapping")
-        # bar = progressbar.ProgressBar(
-        #     widgets=[' [', progressbar.Timer(), '] ', progressbar.Bar(), ' (', progressbar.ETA(), ') '],
-        #     maxval=csv_len).start()
+        bar = progressbar.ProgressBar(
+            widgets=[' [', progressbar.Timer(), '] ', progressbar.Bar(), ' (', progressbar.ETA(), ') '],
+            maxval=csv_len).start()
         for i in range(csv_len):
             edb = tuple(reader[i])[0]
             if edb in data:
                 # print "Skipping edb id " + edb
                 pass
             else:
-                # print "Downloading https://www.exploit-db.com/exploits/" + edb
+                print("Downloading https://www.exploit-db.com/exploits/" + edb)
                 content = ""
                 while True:
                     try:
@@ -207,8 +207,8 @@ def update_shellcode_cve_json():
                     print("Found: edbid " + edb + " <---> " + cve)
                 data[edb] = used
                 time.sleep(random.uniform(0.1, 0.3))
-        #     bar.update(i)
-        # bar.finish()
+            bar.update(i)
+        bar.finish()
 
         with open(pdir + "/shellcode_mapping.json", "w") as db_file:
             json.dump(data, db_file, indent=2)
@@ -350,44 +350,6 @@ def search_by_id(id):
     return found
 #######################
 
-
-######## Library functions
-
-def iter_edbid_from_cve(cve):
-    cve = cve.upper()
-    if cve not in exploit_cve_map:
-        return
-
-    with open(pdir + "/exploit-database/files_exploits.csv") as files:
-        reader = csv.reader(files)
-        # reader.next() #skip header
-        next(reader)
-
-        for row in reader:
-            edb, file, description, date, author, platform, type, port = tuple(row)
-            if edb in exploit_cve_map[cve]:
-                yield int([edb])
-
-    return
-
-
-def edbid_from_cve(cve):
-    return list(iter_edbid_from_cve(cve))
-
-
-def iter_cve_from_edbid(edb):
-    edb = str(int(edb))
-
-    for cve in exploit_cve_map:
-        if edb in exploit_cve_map[cve]:
-            yield cve.upper()
-
-
-def cve_from_edbid(edb):
-    return list(iter_cve_from_edbid(edb))
-
-
-########
 def cve_usage():
     print("+------------------------------------+")
     print("|          cve_searchsploit          |")

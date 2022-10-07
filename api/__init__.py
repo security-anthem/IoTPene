@@ -1,3 +1,4 @@
+import csv
 import os
 import sys
 
@@ -5,6 +6,12 @@ from .exploit_database import *
 from .cve_database import *
 
 db_path = ""
+
+def will_exit_after_call(func):
+    def wrapper():
+        func()
+    sys.exit(0)
+
 def check_db_exist():
     global db_path
     now_path = os.path.abspath('.').lstrip(os.path.abspath('../'))
@@ -18,7 +25,8 @@ def check_db_exist():
         print("path must in IoTpene or IoTPene/api")
         sys.exit(0)
 
-def print_usage(argv):
+@will_exit_after_call
+def print_usage(argv :list):
     print("---------------------")
     print("|      db   API     |")
     print("---------------------")
@@ -26,7 +34,7 @@ def print_usage(argv):
     print("Command:")
     print("search: Search information about db")
     print("usage: search [CVE] || [db ID] || 'penetrate ")
-    print("get: Get script of db")
+    print("get: Get script of db by Id")
     print("usage: get    [CVE] || [db ID]")
     print("update: Update db data")
     print("usage: update all || db || cve")
@@ -36,7 +44,8 @@ def print_usage(argv):
     print("get CVE")
     print("update")
 
-def search(argv):
+@will_exit_after_call
+def search(argv :list):
     query_string = argv[3]
 
     if query_string[0 : 3].upper() == "CVE":
@@ -48,39 +57,54 @@ def search(argv):
         argv.append('-t')
         return search_by_keywords(argv[3:])
 
-def get(argv):
+@will_exit_after_call
+def get(argv :list):
     query_string = argv[3]
-    files = open(db_path + "/exploit-database/files_exploits.csv", errors="ignore")
-    reader = csv.reader(files)
-    next(reader)
+    exploit_files = open(db_path + "/exploit-database/files_exploits.csv", errors="ignore")
+    shellcode_files = open(db_path + "/exploit-database/files_shellcodes.csv", errors="ignore")
+    exploit_reader = csv.reader(exploit_files)
+    shellcode_reader = csv.reader(shellcode_files)
+
+    next(exploit_reader)
+    next(shellcode_reader)
+
+    def get_script_by_id(id, reader):
+        for row in reader:
+            edb, file, description, date, author, platform, type, port = tuple(row)
+            if edb == id:
+                file_route = db_path + "/exploit-database/" + file
+                exploit_script = open(file_route)
+                print(exploit_script.read())
+                exploit_script.close()
 
     if query_string[0 : 3].upper() == "CVE":
         if not query_string.upper() in exploit_cve_map:
-            files.close()
-            return 0
-        query_string = [query_string.upper()]
+            exploit_files.close()
+        exploit_db_id_list = exploit_cve_map.get(query_string)
+        if len(exploit_db_id_list) > 1:
+            print("Total length of DB list: {}".format(len(exploit_db_id_list)))
+            print("Id list: ", *exploit_db_id_list)
+            for id in exploit_db_id_list:
+                search_by_id(id)
+            print("Input DB Id to get a script")
+        elif len(exploit_db_id_list) == 1:
+            get_script_by_id(exploit_db_id_list[0], exploit_reader)
+        else:
+            print("Exploit: No Results")
+
     elif query_string.isnumeric():
-        if not query_string in exploit_db_id_map:
-            files.close()
-            return 0
-        query_string = exploit_db_id_map.get(query_string)
+        if query_string in exploit_db_id_map:
+            get_script_by_id(query_string, exploit_reader)
+        elif query_string in shellcode_db_id_map:
+            get_script_by_id(query_string, shellcode_reader)
+        else:
+            print("No script found")
 
-    for query in query_string:
-        for row in reader:
-            edb, file, description, date, author, platform, type, port = tuple(row)
-            if edb in exploit_cve_map[query]:
-                file_route = db_path + "/exploit-database/" + file
-                exploit_script = open(file_route)
-                print("===================================================================")
-                print("=                     {}                               =".format(query))
-                print("===================================================================")
-                print(exploit_script.read())
-                exploit_script.close()
-        print("Total: {} found. ", exploit_cve_map[query])
-        print("CVE: " + query)
+    exploit_files.close()
+    shellcode_files.close()
 
-    files.close()
-def update(argv):
+@will_exit_after_call
+def update(argv :list):
     query_string = argv[3]
     if query_string == "all":
         update_db()
@@ -94,11 +118,12 @@ def update(argv):
 
 options = {"--help":    print_usage,
            "-h":        print_usage,
+           "help":      print_usage,
            "search":    search,
            "get":       get,
            "update":    update}
 
-def api_run(argv):
+def api_run(argv :list):
 
     if argv[1] != "db":
         sys.exit(0)
