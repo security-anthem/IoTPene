@@ -123,12 +123,17 @@ def create_env(exploit_file_path, cve_id):
     
     create_dockerfile(exploit_file, dir_path)
     
+    docker_file_path = ''.join([s + '/' for s in dir_path.split('/')[:-1]])
+    print('create ' + docker_file_path + 'Dockerfile')
+    print('exec:')
+    print('$ docker build -t ' + cve_id + ' ' + docker_file_path)
+    print('$ docker run -it ' + cve_id + ' sh')
+    
         
 if __name__ == '__main__':
     print("---IoTPene---")
 
-    exploit_file_path = 'api/exploit-database/exploits/multiple/local/51014.js'
-    exploit_file_path = 'api/exploit-database/exploits/windows/dos/23780.py'    
+    # exploit_file_path = 'api/exploit-database/exploits/multiple/local/51014.js'
     
     if len(sys.argv) < 2:
         print_usage()
@@ -136,11 +141,15 @@ if __name__ == '__main__':
         print_usage()
     if sys.argv[1] == "db":
         if sys.argv[2] == "create":
+            sys.argv[2] = "get"
+            exploit_file_path = api.api_run(sys.argv)
+            print('----------------------------------------------------------------------------------')
             if exploit_file_path != '':
                 cve_id = sys.argv[3]
-                create_env(exploit_file_path, cve_id)
+                create_env(exploit_file_path, cve_id.lower())
             else:
                 print('Not Find Exploits')
         else:
             api.api_run(sys.argv)
+            
 

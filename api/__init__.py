@@ -77,21 +77,24 @@ def get(argv :list):
     def get_script_by_id(id, reader):
         for row in reader:
             edb, file, description, date, author, platform, type, port = tuple(row)
-            file_route = ''
-            print('file', file_route)
+            file_route = ''            
             if edb == id:
                 file_route = db_path + "/exploit-database/" + file
+                cve_file_route = file_route
                 exploit_script = open(file_route)
                 print(exploit_script.read())
                 exploit_script.close()
-        return file_route
+        
+        return cve_file_route
 
     res = ''
     if query_string[0 : 3].upper() == "CVE":
         if not query_string.upper() in exploit_cve_map:
             exploit_files.close()
         exploit_db_id_list = exploit_cve_map.get(query_string)
-        if len(exploit_db_id_list) > 1:
+        if exploit_db_id_list is None:
+            print("Exploit: No Results")
+        elif len(exploit_db_id_list) > 1:
             print("Total length of DB list: {}".format(len(exploit_db_id_list)))
             print("Id list: ", *exploit_db_id_list)
             for id in exploit_db_id_list:
@@ -99,9 +102,6 @@ def get(argv :list):
             print("Input DB Id to get a script")
         elif len(exploit_db_id_list) == 1:
             res = get_script_by_id(exploit_db_id_list[0], exploit_reader)
-        else:
-            print("Exploit: No Results")
-
     elif query_string.isnumeric():
         if query_string in exploit_db_id_map:
             res = get_script_by_id(query_string, exploit_reader)
@@ -121,12 +121,12 @@ def update(argv :list):
     query_string = argv[3]
     if query_string == "all":
         update_db()
-        update_shellcode_cve_json()
+        update_exploit_cve_json()
         update_shellcode_cve_json()
     if query_string == "db":
         update_db()
     if query_string == "cve":
-        update_shellcode_cve_json()
+        update_exploit_cve_json()
         update_shellcode_cve_json()
     sys.exit(0)
     
@@ -150,5 +150,7 @@ def api_run(argv :list):
     if len(argv) < 3:
         print_usage(argv)
 
-    options.get(argv[2])(argv)
+    res = options.get(argv[2])(argv)
+
+    return res
 
