@@ -18,7 +18,7 @@ def write_node_dockerfile(dir_path):
     docker_file_path = ''.join([s + '/' for s in dir_path.split('/')[:-1]])
     with open(docker_file_path+'/Dockerfile', mode='w') as f:
         f.write('FROM node:16-alpine3.15\n')
-        f.write('COPY {} /\n'.format(dir_path + '/*', ))
+        f.write('COPY {} /\n'.format('poc_file/*', ))
 
 def write_python_dockerfile(dir_path):
     docker_file_path = ''.join([s + '/' for s in dir_path.split('/')[:-1]])
@@ -93,10 +93,10 @@ if __name__ == '__main__':
         print('Not Find Exploits')
         sys.exit(0)
     
-    # if len(sys.argv) < 2:
-    #     print_usage()
-    # if sys.argv[1] == "--help" or sys.argv[1] == "-h" or sys.argv[1] == "help":
-    #     print_usage()
-    # if sys.argv[1] == "db":
-    #     api.api_run(sys.argv)
+    if len(sys.argv) < 2:
+        print_usage()
+    if sys.argv[1] == "--help" or sys.argv[1] == "-h" or sys.argv[1] == "help":
+        print_usage()
+    if sys.argv[1] == "db":
+        api.api_run(sys.argv)
 
