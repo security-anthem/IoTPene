@@ -12,6 +12,7 @@ def will_exit_after_call(func):
         func()
     sys.exit(0)
 
+
 def check_db_exist():
     global db_path
     now_path = os.path.abspath('.').lstrip(os.path.abspath('../'))
@@ -24,6 +25,7 @@ def check_db_exist():
     else:
         print("path must in IoTpene or IoTPene/api")
         sys.exit(0)
+
 
 # @will_exit_after_call
 def print_usage(argv :list):
@@ -101,7 +103,6 @@ def get(argv :list):
             print("Exploit: No Results")
 
     elif query_string.isnumeric():
-        print(exploit_db_id_map)
         if query_string in exploit_db_id_map:
             res = get_script_by_id(query_string, exploit_reader)
         elif query_string in shellcode_db_id_map:
@@ -137,8 +138,8 @@ options = {"--help":    print_usage,
            "get":       get,
            "update":    update}
 
-def api_run(argv :list):
 
+def api_run(argv :list):
     if argv[1] != "db":
         sys.exit(0)
 
